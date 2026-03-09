@@ -10,7 +10,6 @@ import SpriteKit
 import GameplayKit
 
 class GameViewController: NSViewController {
-
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -23,9 +22,10 @@ class GameViewController: NSViewController {
                 skView.ignoresSiblingOrder = true
                 skView.showsFPS = true
                 skView.showsNodeCount = true
+                skView.showsQuadCount = true
             }
         }
     }
-
+    
 }
 

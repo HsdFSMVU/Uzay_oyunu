@@ -20,7 +20,10 @@
 				Assets.xcassets,
 				GameScene.sks,
 				GameScene.swift,
+				Gezegen.swift,
+				MetalPhysics.swift,
 				rocket_sound.mp3,
+				Shaders.metal,
 			);
 			target = 60DACFE72F54497400FA2963 /* uzay_oyunu iOS */;
 		};
@@ -31,7 +34,10 @@
 				Assets.xcassets,
 				GameScene.sks,
 				GameScene.swift,
+				Gezegen.swift,
+				MetalPhysics.swift,
 				rocket_sound.mp3,
+				Shaders.metal,
 			);
 			target = 60DACFF82F54497400FA2963 /* uzay_oyunu tvOS */;
 		};
@@ -42,7 +48,10 @@
 				Assets.xcassets,
 				GameScene.sks,
 				GameScene.swift,
+				Gezegen.swift,
+				MetalPhysics.swift,
 				rocket_sound.mp3,
+				Shaders.metal,
 			);
 			target = 60DAD0082F54497400FA2963 /* uzay_oyunu macOS */;
 		};
@@ -297,7 +306,7 @@
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -331,7 +340,7 @@
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

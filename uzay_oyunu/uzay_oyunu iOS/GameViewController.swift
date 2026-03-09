@@ -15,6 +15,7 @@ class GameViewController: UIViewController {
         super.viewDidLoad()
         
         if let scene = SKScene(fileNamed: "GameScene") {
+            // Sahnenin ekranı tam kaplamasını sağlıyoruz
             scene.scaleMode = .aspectFill
             
             if let skView = self.view as? SKView {
@@ -60,13 +61,8 @@ class GameViewController: UIViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            return .allButUpsideDown
-        } else {
-            return .all
+            return .landscape // Sadece yatay modda çalışmaya zorlar
         }
-    }
-
     override var prefersStatusBarHidden: Bool {
         return true
     }
