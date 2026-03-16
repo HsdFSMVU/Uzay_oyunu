@@ -7,12 +7,14 @@
 import SpriteKit
 import GameplayKit
 import Foundation
+import GameController
 
 class GameScene: SKScene {
     
     // Oyuncu nesnesi
     private var player: SKSpriteNode!
-    private var anaGezegen: Gezegen!
+    private var anaGezegenler: [Gezegen] = []
+    
     // Ateş Efektleri (Nodes)
     private var thrusterMiddle: SKSpriteNode! // W tuşu (Orta)
     private var thrusterLeft: SKSpriteNode!   // D tuşu (Sol Ateş -> Sağa dönerken)
@@ -20,7 +22,7 @@ class GameScene: SKScene {
     
   
     let normalTexture = SKTexture(imageNamed: "player")
-    let gezegenTexture = SKTexture(imageNamed: "maviGezegen")
+    
     // Hareket bayrakları
     private var isAPressed = false
     private var isDPressed = false
@@ -28,35 +30,39 @@ class GameScene: SKScene {
     private var isSPressed = false
     private var isMouseLeftPressed = false
     private var isSpacePressed = false
+    private var gamepad: GCController?
     
-    // Ses kontrolü
-    private var hasTriggeredRocketSound = false
-    var ses = SKAudioNode( fileNamed: "rocket_sound")
+   
+
     let kamera = SKCameraNode()
     
     // Fizik Değişkenleri
     var moveSpeedX: CGFloat = 0
     var moveSpeedY: CGFloat = 0
-    private var updatedTime: TimeInterval = 0;
-    private var ivmeY : CGFloat = 0;
-    private var ivmeX : CGFloat = 0;
+    private var updatedTime: TimeInterval!
+    private var eskiKonumX: CGFloat!
+    private var eskiKonumY: CGFloat!
+    private var eskiHizX: CGFloat!
+    private var eskiHizY: CGFloat!
+    private var ivmeY : CGFloat!
+    private var ivmeX : CGFloat!
+    
     private var aci : CGFloat = 0;
   
-    let rocketSound = SKAction.playSoundFileNamed("rocket_sound", waitForCompletion: false)
+    
     
     override func didMove(to view: SKView) {
             setupPlayer()
             setupThrusters()
             setupGezegen()
+        setupGamepadObserver()
             // Kamera ayarları
             if kamera.parent == nil {
                 self.addChild(kamera)
             }
-      
+        
             self.camera = kamera
-        ses = SKAudioNode( fileNamed: "rocket_sound")
-        ses.run(SKAction.stop())
-        player.addChild(ses)
+
      
             #if os(iOS) || os(tvOS)
             setupControls()
@@ -75,19 +81,101 @@ class GameScene: SKScene {
         #endif
     }
     
+    
+    // TODO: Başı boş gezen meteorlar eklenecek.
+    // TODO: Hızlanınca kamera genisleyecek yavaslayinca eski haline gelecek.
+    // TODO: Yildizlar eklenecek
+    
+    
+    
+    
+    
+    
+    // MARK: - Gamepad (Xbox/PS) Kurulumu
+        func setupGamepadObserver() {
+            // Kontrolcü bağlandığında haber ver
+            NotificationCenter.default.addObserver(self, selector: #selector(kontrolcuBaglandi), name: .GCControllerDidConnect, object: nil)
+            
+            // Kontrolcü koptuğunda haber ver
+            NotificationCenter.default.addObserver(self, selector: #selector(kontrolcuKoptu), name: .GCControllerDidDisconnect, object: nil)
+            
+            // Eğer oyun açıldığında kontrolcü zaten bağlıysa onu hemen yakala
+            if let mevcutKontrolcu = GCController.controllers().first {
+                kontrolcuAyarla(kontrolcu: mevcutKontrolcu)
+            }
+        }
+        
+        @objc func kontrolcuBaglandi(notification: Notification) {
+            guard let kontrolcu = notification.object as? GCController else { return }
+            print("🎮 Gamepad Bağlandı: \(kontrolcu.vendorName ?? "Bilinmeyen Cihaz")")
+            kontrolcuAyarla(kontrolcu: kontrolcu)
+        }
+    func kontrolcuAyarla(kontrolcu: GCController) {
+            gamepad = kontrolcu
+            
+            // Çoğu modern kontrolcü "Extended Gamepad" profiline uyar
+            guard let extendedGamepad = kontrolcu.extendedGamepad else { return }
+            
+            
+        // 1. GAZ: Xbox'ta 'A' tuşuna (veya istersen sağ tetiğe) basıldığında W'ye basılmış gibi yap
+        /*
+            extendedGamepad.buttonA.valueChangedHandler = { (button, value, pressed) in
+                self.isWPressed = pressed
+            }
+            */
+            // Alternatif Gaz: Sağ Tetik (RT) kullanmak istersen üsttekini silip bunu açabilirsin
+            
+            extendedGamepad.rightTrigger.valueChangedHandler = { (button, value, pressed) in
+                self.isWPressed = pressed
+            }
+            
+            
+            // 2. SOLA DÖNÜŞ: D-Pad Sol Tuşu
+            extendedGamepad.dpad.left.valueChangedHandler = { (button, value, pressed) in
+                self.isAPressed = pressed
+            }
+            
+            // 3. SAĞA DÖNÜŞ: D-Pad Sağ Tuşu
+            extendedGamepad.dpad.right.valueChangedHandler = { (button, value, pressed) in
+                self.isDPressed = pressed
+            }
+            
+            // Ekstra: Sol Analog Joystick (Thumbstick) ile dönmek istersen:
+            extendedGamepad.leftThumbstick.valueChangedHandler = { (stick, xValue, yValue) in
+                // xValue -1.0 (Tam Sol) ile 1.0 (Tam Sağ) arası değer alır
+                if xValue < -0.3 {
+                    self.isAPressed = true
+                    self.isDPressed = false
+                } else if xValue > 0.3 {
+                    self.isDPressed = true
+                    self.isAPressed = false
+                } else {
+                    self.isAPressed = false
+                    self.isDPressed = false
+                }
+            }
+        }
+        @objc func kontrolcuKoptu(notification: Notification) {
+            print("⚠️ Gamepad Bağlantısı Koptu!")
+            gamepad = nil
+            // Kontrolcü koparsa gemi takılı kalmasın diye tuşları sıfırlıyoruz
+            isWPressed = false
+            isAPressed = false
+            isDPressed = false
+        }
+        // MARK: - SETUP
     func setupGezegen() {
-          
-       
+                
+        for _ in 1...5{
+           let gezegen = Gezegen()
+           
+            addChild(gezegen)
             
-             anaGezegen = Gezegen(konumX: -4000,
-                                 konumY: 4000,
-                                 boyut: 1000,      // Yarıçapı 1000 kabul ettiğimiz için çapı 2000 yaptık
-                                 yukseklik: 0,
-                                 yercekimi: 500000, // Eski sabit değerin
-                                 texture: gezegenTexture)
-            
-            anaGezegen.zPosition = 0 // Oyuncunun arkasında kalsın
-            addChild(anaGezegen)
+            anaGezegenler.append(gezegen)
+        }
+              
+              
+        
         }
 
     func normalPlayer(){
@@ -102,7 +190,7 @@ class GameScene: SKScene {
         
         let scale: CGFloat = 0.5
         player.setScale(scale)
-        player.zPosition = 1 // Oyuncu katmanı
+        player.zPosition = 1
         
         if player.parent == nil {
             player.position = .zero
@@ -142,18 +230,64 @@ class GameScene: SKScene {
         player.addChild(thrusterRight)
     }
     
+    // MARK: - UPDATE
+    
     override func update(_ currentTime: TimeInterval) {
-        
+       
         ivmeX = 0
         ivmeY = 0
-        if ivmeY > 2000 || ivmeY < -2000 {
-           print("hi")
-        }
-        kamera.position = player.position
         
+        /// Delta değerleri ( ∆ )
+        if(updatedTime == nil){
+            updatedTime = currentTime
+        }
+        let dt = currentTime - updatedTime
+        updatedTime = currentTime
+        
+        if(eskiKonumX == nil){
+            eskiKonumX = player.position.x
+        }
+        let dVx = (player.position.x - eskiKonumX) * (dt * 50)
+        eskiKonumX = player.position.x
+        
+        if(eskiKonumY == nil){
+            eskiKonumY = player.position.y
+        }
+        let dVy = (player.position.y - eskiKonumY) * (dt * 50)
+        eskiKonumY = player.position.y
+        
+        if(eskiHizX == nil){
+            eskiHizX = dVx
+        }
+        let dAx = (dVx - eskiHizX) * (dt * 50)
+        eskiHizX = dVx
+
+        if(eskiHizY == nil){
+            eskiHizY = dVy
+        }
+        let dAy = (dVy - eskiHizY) * (dt * 50)
+        eskiHizY = dVy
+        /// Deltalar ( ∆ ) bitiş
+        
+        
+        /// Kamera Ayarı
+        #if os(iOS) || os(tvOS)
+        kamera.position = player.position
+        #endif
+    
+        if dAy > 5 || dAy < -5 {
+            print("\n\n--------------------------------------------------------------")
+            print("IvmeX: \(dAx), HızX: \(eskiHizX!), Zaman: \(Int(currentTime) % 1000)")
+            print("IvmeY: \(dAy), HızY: \(eskiHizY!), Zaman: \(Int(currentTime) % 1000)")
+            print("--------------------------------------------------------------")
+        }
+
         let radyan = aci * .pi / 180.0
         player.zRotation = -1 * radyan
-        anaGezegen.gezegenIsle(player: &player, ivmeXGemi: &ivmeX, ivmeYGemi: &ivmeY, moveSpeedY: &moveSpeedY, moveSpeedX: &moveSpeedX )
+        for gezegen in anaGezegenler {
+            gezegen.gezegenIsle(player: &player, ivmeXGemi: &ivmeX, ivmeYGemi: &ivmeY, moveSpeedY: &moveSpeedY, moveSpeedX: &moveSpeedX )
+        }
+        
 
         // Sadece Görünürlük Kontrolleri
         thrusterMiddle.isHidden = !isWPressed
@@ -161,53 +295,19 @@ class GameScene: SKScene {
         thrusterRight.isHidden = !isAPressed
         
         
-        if(updatedTime == 0){
-            updatedTime = currentTime
-        }
-        let dt = currentTime - updatedTime
-        updatedTime = currentTime
-        // gezegen
-        let uzaklikX : CGFloat = ( 4000 - player.position.x )
-        let uzaklikY : CGFloat = ( 4000 - player.position.y )
-        let uzunKenar: CGFloat = ((uzaklikX * uzaklikX) + (uzaklikY * uzaklikY)).squareRoot()
-        print("\(uzaklikX) \t \(uzaklikY) \t \(uzunKenar) \t (dt)")
-        let sinP : CGFloat = ( uzaklikY / uzunKenar )
-        let cosP : CGFloat = ( uzaklikX / uzunKenar )
-        
-        ivmeY += (500000 * sinP ) /  (uzunKenar )
-     
-        ivmeX += (500000 *  cosP ) / (uzunKenar)
-      
-        if( uzunKenar <= 1000){
-            moveSpeedX /= 1.4
-            moveSpeedY /= 1.4
-                player.position.x = 4000 - 1000 * cosP
-                player.position.y = 4000 - 1000 * sinP
-            
-        }
-        //gezegen bitis
+
+       
  
         
         // Dönüş kontrolleri
-        if isAPressed { aci -= 1 }
-        if isDPressed { aci += 1 }
+        if isAPressed { aci -= 2 }
+        if isDPressed { aci += 2 }
         
        
         if isWPressed {
-            if !hasTriggeredRocketSound {
-                hasTriggeredRocketSound = true
-                ses.run(SKAction.play())
-            }else {
-                ses.run(SKAction.stop())
-
-            }
-        
-            
+   
             ivmeY += 1000 * cos(radyan)
             ivmeX += 1000 * sin(radyan)
-        } else {
-            hasTriggeredRocketSound = false
-            player.removeAllActions()
         }
         
       
@@ -234,7 +334,11 @@ class GameScene: SKScene {
             if moveSpeedY < 0 {
                 moveSpeedY = 0
             }
+
         }
+#if os(OSX)
+kamera.position = player.position
+#endif
     }
   
 }
@@ -367,7 +471,9 @@ extension GameScene {
         default: break
         }
     }
-    
+    override func mouseDragged(with event: NSEvent) {
+        
+    }
     override func keyUp(with event: NSEvent) {
         switch event.keyCode {
         case 1: isSPressed = false

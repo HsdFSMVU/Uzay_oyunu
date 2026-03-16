@@ -3,21 +3,20 @@ import SpriteKit
 class Gezegen: SKSpriteNode {
     
     private var boyut: CGFloat
-    private var yukseklik: CGFloat
+
     private var yercekimi: CGFloat
     
-    
+    let gezegenTexture = SKTexture(imageNamed: "MAVIGEZEGEN 1")
 
     
-    struct Ivmeler {
-        var oyuncuIvmeX: CGFloat
-        var oyuncuIvmeY: CGFloat
-    }
     
    
-    init(konumX: CGFloat, konumY: CGFloat, boyut: CGFloat, yukseklik: CGFloat, yercekimi: CGFloat, texture: SKTexture) {
+    
+    
+   
+    init(konumX: CGFloat, konumY: CGFloat, boyut: CGFloat,  yercekimi: CGFloat, texture: SKTexture) {
         self.boyut = boyut
-        self.yukseklik = yukseklik
+        
         self.yercekimi = yercekimi
         
        
@@ -25,7 +24,7 @@ class Gezegen: SKSpriteNode {
        
         
         super.init(texture: texture, color: .clear, size: CGSize(width: 2 * boyut, height: 2 * boyut))
-        
+        self.zPosition = 1
 
         self.position = CGPoint(x: konumX, y: konumY)
         
@@ -37,6 +36,40 @@ class Gezegen: SKSpriteNode {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    init() {
+        let konumXRandom = CGFloat(Int.random(in: -10...10)) * 3000
+        let konumYRandom = CGFloat(Int.random(in: 3...7)) * 3000
+        let boyutRandom =  CGFloat(Int.random(in: 10...15)) * 100
+        let yercekimiRandom = boyutRandom * 500
+  
+        self.boyut = boyutRandom
+        self.yercekimi = yercekimiRandom
+        super.init(texture: gezegenTexture, color: .clear, size: CGSize(width: 2 * boyut, height: 2 * boyut))
+        self.zPosition = 0
+        self.position = CGPoint(x: konumXRandom, y: konumYRandom)
+        
+        print("konumX: \(konumXRandom)  konumY: \(konumYRandom) boyut: \(boyutRandom) texture: \(gezegenTexture)")
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     // 3. Çekim İşleme Fonksiyonu
     public func gezegenIsle(player:inout SKSpriteNode, ivmeXGemi:inout CGFloat, ivmeYGemi:inout CGFloat, moveSpeedY: inout CGFloat ,moveSpeedX: inout CGFloat) {
@@ -61,8 +94,8 @@ class Gezegen: SKSpriteNode {
                 player.position.y = self.position.y - boyut * sinP
             
         }
-        ivmeXGemi = ivmeX
-        ivmeYGemi = ivmeY
+        ivmeXGemi += ivmeX
+        ivmeYGemi += ivmeY
         
     }
 }
